@@ -17,23 +17,18 @@
 
 package com.illusivesoulworks.constructsarmory.data;
 
-import javax.annotation.Nonnull;
-
-import com.illusivesoulworks.constructsarmory.ConstructsArmoryMod;
+import com.illusivesoulworks.constructsarmory.common.ConstructsArmoryModifiers;
+import com.illusivesoulworks.constructsarmory.common.stat.impl.MailMaterialStats;
+import com.illusivesoulworks.constructsarmory.common.stat.impl.PlateMaterialStats;
 import net.minecraft.data.DataGenerator;
-import org.apache.commons.lang3.reflect.FieldUtils;
 import slimeknights.tconstruct.library.data.material.AbstractMaterialDataProvider;
 import slimeknights.tconstruct.library.data.material.AbstractMaterialTraitDataProvider;
 import slimeknights.tconstruct.library.materials.definition.MaterialId;
 import slimeknights.tconstruct.library.modifiers.Modifier;
-import slimeknights.tconstruct.library.modifiers.ModifierManager;
 import slimeknights.tconstruct.library.modifiers.util.StaticModifier;
 import slimeknights.tconstruct.tools.data.material.MaterialIds;
-import com.illusivesoulworks.constructsarmory.common.ConstructsArmoryModifiers;
-import com.illusivesoulworks.constructsarmory.common.stat.impl.MailMaterialStats;
-import com.illusivesoulworks.constructsarmory.common.stat.impl.PlateMaterialStats;
 
-import java.lang.reflect.Field;
+import javax.annotation.Nonnull;
 
 public class ArmorMaterialTraitsDataProvider extends AbstractMaterialTraitDataProvider {
 
@@ -45,7 +40,6 @@ public class ArmorMaterialTraitsDataProvider extends AbstractMaterialTraitDataPr
   @Override
   protected void addMaterialTraits() {
     // Tier 1
-    addArmorTraits(MaterialIds.wood, ConstructsArmoryModifiers.CULTIVATED);
     addArmorTraits(MaterialIds.rock, ConstructsArmoryModifiers.PETROUS);
     addArmorTraits(MaterialIds.leather, ConstructsArmoryModifiers.WOVEN);
     addArmorTraits(MaterialIds.bone, ConstructsArmoryModifiers.SPLINTERED);

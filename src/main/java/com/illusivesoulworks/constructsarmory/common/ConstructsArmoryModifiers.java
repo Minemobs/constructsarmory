@@ -21,7 +21,6 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import slimeknights.tconstruct.library.modifiers.util.ModifierDeferredRegister;
 import slimeknights.tconstruct.library.modifiers.util.StaticModifier;
-import slimeknights.tconstruct.tools.modifiers.traits.general.CultivatedModifier;
 import slimeknights.tconstruct.tools.modifiers.traits.general.DenseModifier;
 import slimeknights.tconstruct.tools.modifiers.traits.general.OvercastModifier;
 import slimeknights.tconstruct.tools.modifiers.traits.general.OvergrowthModifier;
@@ -65,8 +64,6 @@ public class ConstructsArmoryModifiers {
   private static final ModifierDeferredRegister MODIFIERS = ModifierDeferredRegister.create(ConstructsArmoryMod.MOD_ID);
 
   // Tier 1
-  public static final StaticModifier<CultivatedModifier> CULTIVATED =
-      MODIFIERS.register("cultivated", CultivatedModifier::new);
   public static final StaticModifier<WovenModifier> WOVEN =
       MODIFIERS.register("woven", WovenModifier::new);
   public static final StaticModifier<PetrousModifier> PETROUS =
