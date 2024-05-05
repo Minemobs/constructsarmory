@@ -20,8 +20,8 @@ package com.illusivesoulworks.constructsarmory.data;
 import javax.annotation.Nonnull;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.data.recipes.RecipeProvider;
 import org.jetbrains.annotations.NotNull;
-import slimeknights.tconstruct.common.data.BaseRecipeProvider;
 import slimeknights.tconstruct.library.data.recipe.IMaterialRecipeHelper;
 import slimeknights.tconstruct.library.data.recipe.IToolRecipeHelper;
 import slimeknights.tconstruct.library.tools.item.ModifiableArmorItem;
@@ -30,7 +30,7 @@ import com.illusivesoulworks.constructsarmory.common.ConstructsArmoryItems;
 
 import java.util.function.Consumer;
 
-public class ArmorRecipeProvider extends BaseRecipeProvider implements IMaterialRecipeHelper, IToolRecipeHelper {
+public class ArmorRecipeProvider extends RecipeProvider implements IMaterialRecipeHelper, IToolRecipeHelper {
 
     public ArmorRecipeProvider(DataGenerator generator) {
         super(generator);
