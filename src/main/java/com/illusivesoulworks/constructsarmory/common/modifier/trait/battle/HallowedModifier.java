@@ -17,9 +17,7 @@
 
 package com.illusivesoulworks.constructsarmory.common.modifier.trait.battle;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import com.illusivesoulworks.constructsarmory.ConstructsArmoryMod;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -27,36 +25,51 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.TooltipFlag;
+import org.jetbrains.annotations.Nullable;
 import slimeknights.mantle.client.TooltipKey;
-import slimeknights.tconstruct.library.modifiers.Modifier;
+import slimeknights.tconstruct.library.modifiers.ModifierEntry;
+import slimeknights.tconstruct.library.modifiers.ModifierHooks;
+import slimeknights.tconstruct.library.modifiers.data.ModifierMaxLevel;
+import slimeknights.tconstruct.library.modifiers.hook.armor.ProtectionModifierHook;
+import slimeknights.tconstruct.library.modifiers.hook.display.TooltipModifierHook;
+import slimeknights.tconstruct.library.module.ModuleHookMap;
+import slimeknights.tconstruct.library.tools.capability.TinkerDataCapability;
 import slimeknights.tconstruct.library.tools.context.EquipmentContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import com.illusivesoulworks.constructsarmory.common.modifier.EquipmentUtil;
+import slimeknights.tconstruct.tools.modifiers.defense.AbstractProtectionModifier;
 
 import java.util.List;
 
-public class HallowedModifier extends Modifier {
+public class HallowedModifier extends AbstractProtectionModifier<ModifierMaxLevel> implements ProtectionModifierHook, TooltipModifierHook {
+
+  private static final TinkerDataCapability.ComputableDataKey<ModifierMaxLevel> HALLOWED_DATA = ConstructsArmoryMod.createKey("hallowed", ModifierMaxLevel::new);
+
+  public HallowedModifier() {
+    super(HALLOWED_DATA, true);
+  }
 
   @Override
-  public float getProtectionModifier(@Nonnull IToolStackView tool, int level,
-                                     @Nonnull EquipmentContext context,
-                                     @Nonnull EquipmentSlot slotType, DamageSource source,
-                                     float modifierValue) {
+  protected void registerHooks(ModuleHookMap.Builder hookBuilder) {
+    super.registerHooks(hookBuilder);
+    hookBuilder.addHook(this, ModifierHooks.PROTECTION, ModifierHooks.TOOLTIP);
+  }
 
+  @Override
+  public float getProtectionModifier(IToolStackView tool, ModifierEntry modifier, EquipmentContext context, EquipmentSlot slotType, DamageSource source, float modifierValue) {
     if (!source.isBypassMagic() && !source.isBypassInvul()) {
       Entity attacker = source.getEntity();
 
       if (attacker instanceof LivingEntity entity && entity.isInvertedHealAndHarm()) {
-        modifierValue += level * 2f;
+        modifierValue += modifier.getLevel() * 2f;
       }
     }
     return modifierValue;
   }
 
   @Override
-  public void addInformation(@Nonnull IToolStackView tool, int level,
-                             @Nullable Player player, @Nonnull List<Component> tooltip,
-                             @Nonnull TooltipKey key, @Nonnull TooltipFlag flag) {
-    EquipmentUtil.addResistanceTooltip(this, tool, level * 2f, tooltip);
+  public void addTooltip(IToolStackView tool, ModifierEntry modifier, @Nullable Player player, List<Component> tooltip, TooltipKey tooltipKey, TooltipFlag tooltipFlag) {
+    EquipmentUtil.addResistanceTooltip(this, tool, modifier.getLevel() * 2f, tooltip);
+
   }
 }

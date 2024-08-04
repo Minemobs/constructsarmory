@@ -17,20 +17,18 @@
 
 package com.illusivesoulworks.constructsarmory.common.stat;
 
-import java.util.List;
 import javax.annotation.Nonnull;
 import slimeknights.tconstruct.library.materials.stats.MaterialStatsId;
-import slimeknights.tconstruct.library.tools.definition.IToolStatProvider;
-import slimeknights.tconstruct.library.tools.definition.PartRequirement;
 import slimeknights.tconstruct.library.tools.definition.ToolDefinition;
 import slimeknights.tconstruct.library.tools.definition.ToolDefinitionData;
+import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.MaterialNBT;
 import slimeknights.tconstruct.library.tools.nbt.StatsNBT;
 import slimeknights.tconstruct.tools.item.ArmorSlotType;
 import com.illusivesoulworks.constructsarmory.common.stat.impl.MailMaterialStats;
 import com.illusivesoulworks.constructsarmory.common.stat.impl.PlateMaterialStats;
 
-public class ArmorStatProvider implements IToolStatProvider {
+public class ArmorStatProvider implements IToolStackView {
 
   private final ArmorSlotType slotType;
 
@@ -44,6 +42,8 @@ public class ArmorStatProvider implements IToolStatProvider {
                              @Nonnull MaterialNBT materials) {
     return ArmorStatsBuilder.from(this.slotType, definition, materials).buildStats();
   }
+
+
 
   @Override
   public boolean isMultipart() {

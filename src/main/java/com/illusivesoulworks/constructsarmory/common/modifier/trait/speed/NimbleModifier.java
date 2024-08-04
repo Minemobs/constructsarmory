@@ -17,20 +17,25 @@
 
 package com.illusivesoulworks.constructsarmory.common.modifier.trait.speed;
 
-import javax.annotation.Nonnull;
 import slimeknights.tconstruct.library.modifiers.Modifier;
-import slimeknights.tconstruct.library.tools.context.ToolRebuildContext;
+import slimeknights.tconstruct.library.modifiers.ModifierEntry;
+import slimeknights.tconstruct.library.modifiers.ModifierHooks;
+import slimeknights.tconstruct.library.modifiers.hook.build.ToolStatsModifierHook;
+import slimeknights.tconstruct.library.module.ModuleHookMap;
+import slimeknights.tconstruct.library.tools.nbt.IToolContext;
 import slimeknights.tconstruct.library.tools.stat.ModifierStatsBuilder;
 import com.illusivesoulworks.constructsarmory.common.stat.ConstructsArmoryStats;
 
-public class NimbleModifier extends Modifier {
-
+public class NimbleModifier extends Modifier implements ToolStatsModifierHook {
 
   @Override
-  public void addToolStats(@Nonnull ToolRebuildContext context, int level,
-                           @Nonnull ModifierStatsBuilder builder) {
-    ConstructsArmoryStats.MOVEMENT_SPEED.add(builder, level * 0.02f);
+  protected void registerHooks(ModuleHookMap.Builder hookBuilder) {
+    super.registerHooks(hookBuilder);
+    hookBuilder.addHook(this, ModifierHooks.TOOL_STATS);
   }
 
-
+  @Override
+  public void addToolStats(IToolContext context, ModifierEntry modifier, ModifierStatsBuilder builder) {
+    ConstructsArmoryStats.MOVEMENT_SPEED.add(builder, modifier.getLevel() * 0.02f);
+  }
 }

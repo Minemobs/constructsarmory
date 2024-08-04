@@ -19,26 +19,37 @@ package com.illusivesoulworks.constructsarmory.common.modifier.trait.battle.coun
 
 import javax.annotation.Nonnull;
 
+import com.illusivesoulworks.constructsarmory.ConstructsArmoryMod;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import slimeknights.tconstruct.library.modifiers.Modifier;
+import slimeknights.tconstruct.library.modifiers.ModifierEntry;
+import slimeknights.tconstruct.library.modifiers.ModifierHooks;
+import slimeknights.tconstruct.library.modifiers.hook.armor.OnAttackedModifierHook;
+import slimeknights.tconstruct.library.modifiers.modules.technical.ArmorLevelModule;
+import slimeknights.tconstruct.library.module.ModuleHookMap;
+import slimeknights.tconstruct.library.tools.capability.TinkerDataCapability;
 import slimeknights.tconstruct.library.tools.context.EquipmentContext;
 import slimeknights.tconstruct.library.tools.helper.ToolDamageUtil;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 
-public abstract class CounterattackModifier extends Modifier {
+public abstract class CounterattackModifier extends Modifier implements OnAttackedModifierHook {
 
   @Override
-  public void onAttacked(@Nonnull IToolStackView tool, int level,
-                         @Nonnull EquipmentContext context, @Nonnull EquipmentSlot slotType,
-                         DamageSource source, float amount, boolean isDirectDamage) {
+  protected void registerHooks(ModuleHookMap.Builder hookBuilder) {
+    super.registerHooks(hookBuilder);
+    hookBuilder.addHook(this, ModifierHooks.ON_ATTACKED);
+  }
+
+  @Override
+  public void onAttacked(IToolStackView tool, ModifierEntry modifier, EquipmentContext context, EquipmentSlot slotType, DamageSource source, float amount, boolean isDirectDamage) {
     Entity attacker = source.getEntity();
 
     if (attacker instanceof LivingEntity && attacker.isAlive() && isDirectDamage) {
       int durabilityDamage =
-          counter(tool, level, (LivingEntity) attacker, context, slotType, source, amount);
+          counter(tool, modifier.getLevel(), (LivingEntity) attacker, context, slotType, source, amount);
 
       if (durabilityDamage > 0) {
         ToolDamageUtil.damageAnimated(tool, durabilityDamage, context.getEntity(), slotType);

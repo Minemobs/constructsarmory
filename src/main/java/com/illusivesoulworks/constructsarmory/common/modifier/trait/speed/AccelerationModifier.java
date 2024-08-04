@@ -33,7 +33,13 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import slimeknights.mantle.client.TooltipKey;
 import slimeknights.tconstruct.common.TinkerTags;
-import slimeknights.tconstruct.library.modifiers.impl.TotalArmorLevelModifier;
+import slimeknights.tconstruct.library.modifiers.Modifier;
+import slimeknights.tconstruct.library.modifiers.ModifierEntry;
+import slimeknights.tconstruct.library.modifiers.ModifierHooks;
+import slimeknights.tconstruct.library.modifiers.hook.armor.EquipmentChangeModifierHook;
+import slimeknights.tconstruct.library.modifiers.hook.display.TooltipModifierHook;
+import slimeknights.tconstruct.library.modifiers.modules.technical.ArmorLevelModule;
+import slimeknights.tconstruct.library.module.ModuleHookMap;
 import slimeknights.tconstruct.library.tools.capability.TinkerDataCapability;
 import slimeknights.tconstruct.library.tools.context.EquipmentChangeContext;
 import slimeknights.tconstruct.library.tools.context.EquipmentContext;
@@ -44,18 +50,23 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
-public class AccelerationModifier extends TotalArmorLevelModifier implements IArmorUpdateModifier {
+public class AccelerationModifier extends Modifier implements IArmorUpdateModifier, EquipmentChangeModifierHook, TooltipModifierHook {
 
   private static final TinkerDataCapability.TinkerDataKey<Integer> ACCELERATION =
       ConstructsArmoryMod.createKey("acceleration");
 
   public AccelerationModifier() {
-    super(ACCELERATION);
     MinecraftForge.EVENT_BUS.addListener(AccelerationModifier::onUpdateApply);
   }
 
-  private static void onUpdateApply(final LivingEvent.LivingUpdateEvent evt) {
-    LivingEntity living = evt.getEntityLiving();
+  @Override
+  protected void registerHooks(ModuleHookMap.Builder hookBuilder) {
+    super.registerHooks(hookBuilder);
+    hookBuilder.addModule(new ArmorLevelModule(ACCELERATION, false, null)).addHook(this, ModifierHooks.EQUIPMENT_CHANGE, ModifierHooks.TOOLTIP);
+  }
+
+  private static void onUpdateApply(final LivingEvent.LivingTickEvent evt) {
+    LivingEntity living = evt.getEntity();
 
     if (living.isSpectator()) {
       return;
@@ -86,17 +97,14 @@ public class AccelerationModifier extends TotalArmorLevelModifier implements IAr
   }
 
   @Override
-  public void addInformation(@Nonnull IToolStackView armor, int level,
-                             @Nullable Player player, @Nonnull List<Component> tooltip,
-                             @Nonnull TooltipKey key, @Nonnull TooltipFlag tooltipFlag) {
-
+  public void addTooltip(IToolStackView armor, ModifierEntry modifier, @org.jetbrains.annotations.Nullable Player player, List<Component> tooltip, TooltipKey key, TooltipFlag flag) {
     if (armor.hasTag(TinkerTags.Items.ARMOR)) {
       float boost;
 
       if (player != null && key == TooltipKey.SHIFT) {
         int effectLevel =
             Math.min(31, ConstructsArmoryEffects.ACCELERATION.get().getLevel(player) + 1);
-        boost = level * effectLevel / 400f;
+        boost = modifier.getLevel() * effectLevel / 400f;
       } else {
         boost = 0.0f;
       }
@@ -108,23 +116,23 @@ public class AccelerationModifier extends TotalArmorLevelModifier implements IAr
   }
 
   @Override
-  public void onUnequip(@Nonnull IToolStackView tool, int level,
-                        EquipmentChangeContext context) {
+  public void onUnequip(IToolStackView tool, ModifierEntry modifier, EquipmentChangeContext context) {
     LivingEntity livingEntity = context.getEntity();
-    IToolStackView newTool = context.getReplacementTool();
 
-    if (newTool == null || newTool.isBroken() || newTool.getModifierLevel(this) != level) {
+    if (tool.isBroken() || tool.getModifierLevel(this) != modifier.getLevel()) {
       AttributeInstance attribute = livingEntity.getAttribute(Attributes.MOVEMENT_SPEED);
 
       if (attribute != null) {
         attribute.removeModifier(EquipmentUtil.getUuid(getId(), context.getChangedSlot()));
       }
     }
+
   }
 
   @Nullable
   @Override
   public <T> T getModule(@Nonnull Class<T> type) {
+    //?
     return tryModuleMatch(type, IArmorUpdateModifier.class, this);
   }
 

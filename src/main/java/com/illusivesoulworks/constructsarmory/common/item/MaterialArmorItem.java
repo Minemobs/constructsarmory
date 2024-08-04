@@ -35,8 +35,6 @@ import javax.annotation.Nullable;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.Model;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -46,7 +44,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraftforge.client.IItemRenderProperties;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.jetbrains.annotations.NotNull;
 import slimeknights.mantle.client.TooltipKey;
 import slimeknights.tconstruct.common.TinkerTags;
@@ -54,7 +52,7 @@ import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.tools.definition.ModifiableArmorMaterial;
 import slimeknights.tconstruct.library.tools.helper.TooltipBuilder;
 import slimeknights.tconstruct.library.tools.helper.TooltipUtil;
-import slimeknights.tconstruct.library.tools.item.ModifiableArmorItem;
+import slimeknights.tconstruct.library.tools.item.armor.ModifiableArmorItem;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.StatsNBT;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
@@ -70,15 +68,15 @@ public class MaterialArmorItem extends ModifiableArmorItem {
           UUID.fromString("2ad3f246-fee1-4e67-b886-69fd380bb150")};
 
   public MaterialArmorItem(ModifiableArmorMaterial material, ArmorSlotType slotType,
-                           Properties properties) {
+                           Item.Properties properties) {
     super(material, slotType, properties);
   }
   @Override
-  public void initializeClient(Consumer<IItemRenderProperties> consumer) {
-    consumer.accept(new IItemRenderProperties() {
+  public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+    consumer.accept(new IClientItemExtensions() {
       @NotNull
       @Override
-      public Model getBaseArmorModel(LivingEntity entityLiving, ItemStack stack, EquipmentSlot armorSlot, HumanoidModel<?> base) {
+      public Model getGenericArmorModel(LivingEntity entity, ItemStack stack, EquipmentSlot armorSlot, HumanoidModel<?> base) {
         return MaterialArmorModel.getModel(stack, armorSlot, base);
       }
     });
@@ -140,21 +138,22 @@ public class MaterialArmorItem extends ModifiableArmorItem {
       builder.add(ToolStats.ARMOR_TOUGHNESS);
       builder.add(ToolStats.KNOCKBACK_RESISTANCE.formatValue(
           tool.getStats().get(ToolStats.KNOCKBACK_RESISTANCE) * 10f));
-      builder.add(new TranslatableComponent(
+      builder.add(Component.translatable(
           "tool_stat." + ConstructsArmoryMod.MOD_ID + ".movement_speed").append(
-          new TextComponent(PERCENT_FORMAT.format(
+          Component.literal(PERCENT_FORMAT.format(
               tool.getStats().get(ConstructsArmoryStats.MOVEMENT_SPEED))).withStyle(
               style -> style.withColor(ConstructsArmoryStats.MOVEMENT_SPEED.getColor()))));
     }
 
     if (tool.hasTag(TinkerTags.Items.CHESTPLATES) &&
-        tool.getModifierLevel(TinkerModifiers.unarmed.get()) > 0) {
+        tool.getModifierLevel(TinkerModifiers.ambidextrous.get()) > 0) {
       builder.addWithAttribute(ToolStats.ATTACK_DAMAGE, Attributes.ATTACK_DAMAGE);
     }
     builder.addAllFreeSlots();
 
     for (ModifierEntry entry : tool.getModifierList()) {
-      entry.getModifier().addInformation(tool, entry.getLevel(), player, tooltip, key, flag);
+      //entry.getModifier().addInformation(tool, entry.getLevel(), player, tooltip, key, flag);
+      builder.add(entry.getModifier().getDisplayName());
     }
     return builder.getTooltips();
   }

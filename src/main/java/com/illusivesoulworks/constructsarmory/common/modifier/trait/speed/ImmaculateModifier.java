@@ -19,9 +19,8 @@ package com.illusivesoulworks.constructsarmory.common.modifier.trait.speed;
 
 import java.util.List;
 import java.util.UUID;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
+import com.illusivesoulworks.constructsarmory.ConstructsArmoryMod;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -30,31 +29,41 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.TooltipFlag;
+import org.jetbrains.annotations.Nullable;
 import slimeknights.mantle.client.TooltipKey;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
-import slimeknights.tconstruct.library.tools.context.ToolRebuildContext;
+import slimeknights.tconstruct.library.modifiers.ModifierEntry;
+import slimeknights.tconstruct.library.modifiers.ModifierHooks;
+import slimeknights.tconstruct.library.modifiers.hook.build.VolatileDataModifierHook;
+import slimeknights.tconstruct.library.modifiers.hook.display.TooltipModifierHook;
+import slimeknights.tconstruct.library.module.ModuleHookMap;
+import slimeknights.tconstruct.library.tools.nbt.IToolContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ModDataNBT;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
-import slimeknights.tconstruct.tools.modifiers.traits.harvest.MaintainedModifier;
 import com.illusivesoulworks.constructsarmory.common.modifier.EquipmentUtil;
 
 /**
  * Modified copy of {@link MaintainedModifier} from Tinkers' Construct
  * MIT License (c) SlimeKnights
  */
-public class ImmaculateModifier extends AbstractSpeedModifier {
+public class ImmaculateModifier extends AbstractSpeedModifier implements VolatileDataModifierHook, TooltipModifierHook {
 
   private static final ResourceLocation KEY_ORIGINAL_DURABILITY =
       TConstruct.getResource("durability");
 
   @Override
-  public void addVolatileData(@Nonnull ToolRebuildContext context, int level,
-                              ModDataNBT volatileData) {
+  protected void registerHooks(ModuleHookMap.Builder hookBuilder) {
+    super.registerHooks(hookBuilder);
+    hookBuilder.addHook(this, ModifierHooks.VOLATILE_DATA, ModifierHooks.TOOLTIP);
+  }
+
+  @Override
+  public void addVolatileData(IToolContext context, ModifierEntry modifier, ModDataNBT volatileData) {
     volatileData.putInt(KEY_ORIGINAL_DURABILITY,
-        (int) (context.getBaseStats().get(ToolStats.DURABILITY) *
-            context.getDefinition().getData().getMultiplier(ToolStats.DURABILITY)));
+        ConstructsArmoryMod.getBaseStats(context.getDefinitionData()).getInt(ToolStats.DURABILITY) *
+            (int) ConstructsArmoryMod.getMultiplier(context.getDefinition().getData()).get(ToolStats.DURABILITY));
   }
 
   public static float boost(int durability, float boost, int min, int max) {
@@ -70,17 +79,14 @@ public class ImmaculateModifier extends AbstractSpeedModifier {
   }
 
   @Override
-  public void addInformation(@Nonnull IToolStackView armor, int level,
-                             @Nullable Player player, @Nonnull List<Component> tooltip,
-                             @Nonnull TooltipKey key, @Nonnull TooltipFlag tooltipFlag) {
-
+  public void addTooltip(IToolStackView armor, ModifierEntry modifier, @Nullable Player player, List<Component> tooltip, TooltipKey key, TooltipFlag flag) {
     if (armor.hasTag(TinkerTags.Items.ARMOR)) {
       float boost;
 
       if (player != null && key == TooltipKey.SHIFT) {
-        boost = getTotalBoost(armor, level);
+        boost = getTotalBoost(armor, modifier.getLevel());
       } else {
-        boost = 0.02f * level;
+        boost = 0.02f * modifier.getLevel();
       }
 
       if (boost > 0) {

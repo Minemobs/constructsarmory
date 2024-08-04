@@ -20,29 +20,33 @@ package com.illusivesoulworks.constructsarmory.common.modifier.trait.general;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.living.PotionEvent;
-import org.apache.commons.lang3.reflect.FieldUtils;
-import slimeknights.tconstruct.library.modifiers.impl.TotalArmorLevelModifier;
+import net.minecraftforge.event.entity.living.MobEffectEvent;
+import slimeknights.tconstruct.library.modifiers.Modifier;
+import slimeknights.tconstruct.library.modifiers.modules.technical.ArmorLevelModule;
+import slimeknights.tconstruct.library.module.ModuleHookMap;
 import slimeknights.tconstruct.library.tools.capability.TinkerDataCapability;
 import com.illusivesoulworks.constructsarmory.ConstructsArmoryMod;
 
-import java.lang.reflect.Field;
-
-public class ShieldingModifier extends TotalArmorLevelModifier {
+public class ShieldingModifier extends Modifier {
 
   private static final TinkerDataCapability.TinkerDataKey<Integer> SHIELDING =
       ConstructsArmoryMod.createKey("shielding");
 
   public ShieldingModifier() {
-    super(SHIELDING);
     MinecraftForge.EVENT_BUS.addListener(ShieldingModifier::onPotionStart);
   }
 
-  private static void onPotionStart(final PotionEvent.PotionAddedEvent evt) {
-    MobEffectInstance newEffect = evt.getPotionEffect();
+  @Override
+  protected void registerHooks(ModuleHookMap.Builder hookBuilder) {
+    super.registerHooks(hookBuilder);
+    hookBuilder.addModule(new ArmorLevelModule(SHIELDING, false, null));
+  }
+
+  private static void onPotionStart(final MobEffectEvent.Added evt) {
+    MobEffectInstance newEffect = evt.getEffectInstance();
 
     if (!newEffect.getCurativeItems().isEmpty()) {
-      LivingEntity living = evt.getEntityLiving();
+      LivingEntity living = evt.getEntity();
       living.getCapability(TinkerDataCapability.CAPABILITY).ifPresent(data -> {
         int levels = data.get(SHIELDING, 0);
 
@@ -52,13 +56,14 @@ public class ShieldingModifier extends TotalArmorLevelModifier {
           if (!newEffect.getEffect().isBeneficial()) {
             change *= -1;
           }
-          try {
+          newEffect.duration = Math.max(0, (int) (newEffect.getDuration() * (1 + change)));
+          /*try {
             Field f_19503_ = FieldUtils.getDeclaredField(MobEffectInstance.class, "f_19503_", true);
             f_19503_.setAccessible(true);
             f_19503_.set(newEffect, Math.max(0, (int) (newEffect.getDuration() * (1 + change))));
           } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
-          }
+          }*/
         }
       });
     }

@@ -23,8 +23,8 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraft.Util;
 import slimeknights.tconstruct.common.Sounds;
-import slimeknights.tconstruct.library.tools.definition.IToolStatProvider;
 import slimeknights.tconstruct.library.tools.definition.ModifiableArmorMaterial;
+import slimeknights.tconstruct.library.tools.nbt.IToolContext;
 import slimeknights.tconstruct.tools.item.ArmorSlotType;
 import com.illusivesoulworks.constructsarmory.ConstructsArmoryMod;
 import com.illusivesoulworks.constructsarmory.common.stat.ArmorStatProvider;
@@ -32,7 +32,7 @@ import com.illusivesoulworks.constructsarmory.common.stat.ArmorStatProvider;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ConstructsArmoryDefinitions {
 
-  public static final Map<ArmorSlotType, IToolStatProvider> ARMOR_STAT_PROVIDERS =
+  public static final Map<ArmorSlotType, IToolContext> ARMOR_STAT_PROVIDERS =
       Util.make(new EnumMap<>(ArmorSlotType.class), map -> {
         for (ArmorSlotType type : ArmorSlotType.values()) {
           map.put(type, new ArmorStatProvider(type));
@@ -40,7 +40,7 @@ public class ConstructsArmoryDefinitions {
       });
 
   public static final ModifiableArmorMaterial MATERIAL_ARMOR =
-      ModifiableArmorMaterial.builder(ConstructsArmoryMod.getResource("material_armor"))
+      ModifiableArmorMaterial.create(ConstructsArmoryMod.getResource("material_armor"), Sounds.EQUIP_PLATE.getSound())
           .setStatsProvider(ArmorSlotType.HELMET, ARMOR_STAT_PROVIDERS.get(ArmorSlotType.HELMET))
           .setStatsProvider(ArmorSlotType.CHESTPLATE,
               ARMOR_STAT_PROVIDERS.get(ArmorSlotType.CHESTPLATE))

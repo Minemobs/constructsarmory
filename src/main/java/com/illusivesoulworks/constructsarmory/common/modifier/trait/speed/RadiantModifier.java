@@ -32,22 +32,29 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.LightLayer;
 import slimeknights.mantle.client.TooltipKey;
 import slimeknights.tconstruct.common.TinkerTags;
+import slimeknights.tconstruct.library.modifiers.ModifierEntry;
+import slimeknights.tconstruct.library.modifiers.ModifierHooks;
+import slimeknights.tconstruct.library.modifiers.hook.display.TooltipModifierHook;
+import slimeknights.tconstruct.library.module.ModuleHookMap;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import com.illusivesoulworks.constructsarmory.common.modifier.EquipmentUtil;
 
-public class RadiantModifier extends AbstractSpeedModifier {
+public class RadiantModifier extends AbstractSpeedModifier implements TooltipModifierHook {
 
   private static final float BOOST_AT_15 = 0.02f;
+
+  @Override
+  protected void registerHooks(ModuleHookMap.Builder hookBuilder) {
+    super.registerHooks(hookBuilder);
+    hookBuilder.addHook(this, ModifierHooks.TOOLTIP);
+  }
 
   private static float getBoost(int lightLevel, int level) {
     return level * BOOST_AT_15 * (lightLevel / 15f);
   }
 
   @Override
-  public void addInformation(@Nonnull IToolStackView armor, int level,
-                             @Nullable Player player, @Nonnull List<Component> tooltip,
-                             @Nonnull TooltipKey key, @Nonnull TooltipFlag tooltipFlag) {
-
+  public void addTooltip(IToolStackView armor, ModifierEntry modifier, @org.jetbrains.annotations.Nullable Player player, List<Component> tooltip, TooltipKey key, TooltipFlag flag) {
     if (armor.hasTag(TinkerTags.Items.ARMOR)) {
       float boost;
 
@@ -59,9 +66,9 @@ public class RadiantModifier extends AbstractSpeedModifier {
           i = Math.max(i, player.level.getBrightness(LightLayer.BLOCK, player.blockPosition()) -
               player.level.getSkyDarken());
         }
-        boost = getBoost(i, level);
+        boost = getBoost(i, modifier.getLevel());
       } else {
-        boost = BOOST_AT_15 * level;
+        boost = BOOST_AT_15 * modifier.getLevel();
       }
 
       if (boost > 0) {

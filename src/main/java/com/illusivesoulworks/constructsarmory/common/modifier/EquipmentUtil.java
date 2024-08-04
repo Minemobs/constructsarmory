@@ -45,11 +45,11 @@ public class EquipmentUtil {
                                           float multiplier, List<Component> tooltip) {
 
     if (armor.hasTag(TinkerTags.Items.ARMOR)) {
-      tooltip.add(modifier.applyStyle(new TextComponent(
+      tooltip.add(modifier.applyStyle(Component.literal(
               Util.PERCENT_BOOST_FORMAT.format(multiplier / 25f))
               .append(" ")
               .append(
-                  new TranslatableComponent(modifier.getTranslationKey() + ".resistance"))));
+                  Component.translatable(modifier.getTranslationKey() + ".resistance"))));
     }
   }
 
@@ -57,11 +57,10 @@ public class EquipmentUtil {
                                      List<Component> tooltip) {
 
     if (armor.hasTag(TinkerTags.Items.ARMOR)) {
-      tooltip.add(modifier.applyStyle(new TextComponent(
+      tooltip.add(modifier.applyStyle(Component.literal(
           Util.PERCENT_BOOST_FORMAT.format(multiplier))
           .append(" ")
-          .append(
-              new TranslatableComponent(modifier.getTranslationKey() + ".speed"))));
+          .append(Component.translatable(modifier.getTranslationKey() + ".speed"))));
     }
   }
 }

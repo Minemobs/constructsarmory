@@ -24,24 +24,32 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import slimeknights.tconstruct.library.events.teleport.EnderdodgingTeleportEvent;
 import slimeknights.tconstruct.library.modifiers.Modifier;
+import slimeknights.tconstruct.library.modifiers.ModifierEntry;
+import slimeknights.tconstruct.library.modifiers.ModifierHooks;
+import slimeknights.tconstruct.library.modifiers.hook.armor.OnAttackedModifierHook;
+import slimeknights.tconstruct.library.module.ModuleHookMap;
 import slimeknights.tconstruct.library.tools.context.EquipmentContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.utils.TeleportHelper;
 import slimeknights.tconstruct.tools.TinkerModifiers;
 
-public class EndershieldModifier extends Modifier {
+public class EndershieldModifier extends Modifier implements OnAttackedModifierHook {
 
   private static final TeleportHelper.ITeleportEventFactory FACTORY =
       EnderdodgingTeleportEvent::new;
 
   @Override
-  public void onAttacked(@Nonnull IToolStackView tool, int level, EquipmentContext context,
-                         @Nonnull EquipmentSlot slotType, @Nonnull DamageSource source,
-                         float amount, boolean isDirectDamage) {
+  protected void registerHooks(ModuleHookMap.Builder hookBuilder) {
+    super.registerHooks(hookBuilder);
+    hookBuilder.addHook(this, ModifierHooks.ON_ATTACKED);
+  }
+
+  @Override
+  public void onAttacked(IToolStackView tool, ModifierEntry modifier, EquipmentContext context, EquipmentSlot slotType, DamageSource source, float amount, boolean isDirectDamage) {
     LivingEntity self = context.getEntity();
 
     if (!self.hasEffect(TinkerModifiers.teleportCooldownEffect.get()) &&
-        RANDOM.nextInt(10 - level * 2) == 0) {
+        RANDOM.nextInt(10 - modifier.getLevel() * 2) == 0) {
 
       if (TeleportHelper.randomNearbyTeleport(context.getEntity(), FACTORY)) {
         TinkerModifiers.teleportCooldownEffect.get().apply(self, 15 * 20, 1, true);

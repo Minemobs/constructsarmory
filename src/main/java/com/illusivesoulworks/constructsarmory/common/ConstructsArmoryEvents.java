@@ -40,7 +40,7 @@ public class ConstructsArmoryEvents {
   }
 
   private static void livingHurt(final LivingHurtEvent evt) {
-    LivingEntity living = evt.getEntityLiving();
+    LivingEntity living = evt.getEntity();
     EquipmentContext context = new EquipmentContext(living);
 
     if (!context.hasModifiableArmor()) {
@@ -70,8 +70,8 @@ public class ConstructsArmoryEvents {
     }
   }
 
-  private static void livingUpdate(final LivingEvent.LivingUpdateEvent evt) {
-    LivingEntity living = evt.getEntityLiving();
+  private static void livingUpdate(final LivingEvent.LivingTickEvent evt) {
+    LivingEntity living = evt.getEntity();
 
     if (living.isSpectator()) {
       return;
@@ -90,11 +90,8 @@ public class ConstructsArmoryEvents {
         if (armor != null) {
 
           for (ModifierEntry entry : armor.getModifierList()) {
-            IArmorUpdateModifier hook = entry.getModifier().getModule(IArmorUpdateModifier.class);
-
-            if (hook != null) {
-              hook.onUpdate(armor, slotType, entry.getLevel(), living);
-            }
+            IArmorUpdateModifier hook = entry.getModifier().getHook(IArmorUpdateModifier.class);
+            hook.onUpdate(armor, slotType, entry.getLevel(), living);
           }
         }
       }

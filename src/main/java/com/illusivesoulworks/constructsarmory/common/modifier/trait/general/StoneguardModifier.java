@@ -17,15 +17,14 @@
 
 package com.illusivesoulworks.constructsarmory.common.modifier.trait.general;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
+import org.jetbrains.annotations.Nullable;
 import slimeknights.tconstruct.common.TinkerTags;
+import slimeknights.tconstruct.library.modifiers.Modifier;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.impl.DurabilityShieldModifier;
 import slimeknights.tconstruct.library.tools.context.EquipmentContext;
@@ -46,8 +45,8 @@ public class StoneguardModifier extends DurabilityShieldModifier {
   }
 
   @Override
-  protected int getShieldCapacity(IToolStackView tool, int level) {
-    return (int) (level * 100 * tool.getMultiplier(ToolStats.DURABILITY));
+  public int getShieldCapacity(IToolStackView tool, ModifierEntry modifier) {
+    return (int) (modifier.getLevel() * 100 * tool.getMultiplier(ToolStats.DURABILITY));
   }
 
   @Override
@@ -56,7 +55,7 @@ public class StoneguardModifier extends DurabilityShieldModifier {
   }
 
   private static void onItemPickup(final EntityItemPickupEvent evt) {
-    Player player = evt.getPlayer();
+    Player player = evt.getEntity();
 
     if (player.isSpectator()) {
       return;
@@ -80,8 +79,9 @@ public class StoneguardModifier extends DurabilityShieldModifier {
         if (armor != null && !armor.isBroken()) {
 
           for (ModifierEntry entry : armor.getModifierList()) {
+            Modifier modifier = entry.getModifier();
 
-            if (entry.getModifier() == ConstructsArmoryModifiers.STONEGUARD.get()) {
+            if (modifier == ConstructsArmoryModifiers.STONEGUARD.get()) {
               int addedShield = 0;
               int level = entry.getLevel();
               float chance = level * 0.20f;
@@ -103,7 +103,7 @@ public class StoneguardModifier extends DurabilityShieldModifier {
               }
 
               if (addedShield > 0) {
-                ((StoneguardModifier) entry.getModifier()).addShield(armor, level, addedShield * 3);
+                ((StoneguardModifier) modifier).addShield(armor, entry, addedShield * 3);
               }
 
               if (stack.getCount() == 0) {
@@ -118,13 +118,12 @@ public class StoneguardModifier extends DurabilityShieldModifier {
 
   @Nullable
   @Override
-  public Boolean showDurabilityBar(@Nonnull IToolStackView tool, int level) {
+  public Boolean showDurabilityBar(IToolStackView tool, ModifierEntry modifier) {
     return getShield(tool) > 0 ? true : null;
   }
 
   @Override
-  public int getDurabilityRGB(@Nonnull IToolStackView tool, int level) {
-
+  public int getDurabilityRGB(IToolStackView tool, ModifierEntry modifier) {
     if (getShield(tool) > 0) {
       return 0x7f7f7f;
     }

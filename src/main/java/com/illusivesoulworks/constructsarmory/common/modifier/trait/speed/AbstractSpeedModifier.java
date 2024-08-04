@@ -25,20 +25,29 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import slimeknights.tconstruct.library.modifiers.Modifier;
+import slimeknights.tconstruct.library.modifiers.ModifierEntry;
+import slimeknights.tconstruct.library.modifiers.ModifierHooks;
+import slimeknights.tconstruct.library.modifiers.hook.armor.EquipmentChangeModifierHook;
+import slimeknights.tconstruct.library.module.ModuleHookMap;
 import slimeknights.tconstruct.library.tools.context.EquipmentChangeContext;
 import com.illusivesoulworks.constructsarmory.common.modifier.EquipmentUtil;
 import com.illusivesoulworks.constructsarmory.common.modifier.IArmorUpdateModifier;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 
-public abstract class AbstractSpeedModifier extends Modifier implements IArmorUpdateModifier {
+public abstract class AbstractSpeedModifier extends Modifier implements IArmorUpdateModifier, EquipmentChangeModifierHook {
 
   @Override
-  public void onUnequip(IToolStackView tool, int level,
-                        EquipmentChangeContext context) {
+  protected void registerHooks(ModuleHookMap.Builder hookBuilder) {
+    super.registerHooks(hookBuilder);
+    hookBuilder.addHook(this, ModifierHooks.EQUIPMENT_CHANGE);
+  }
+
+  @Override
+  public void onUnequip(IToolStackView tool, ModifierEntry modifier, EquipmentChangeContext context) {
     LivingEntity livingEntity = context.getEntity();
     IToolStackView newTool = context.getReplacementTool();
 
-    if (newTool == null || newTool.isBroken() || newTool.getModifierLevel(this) != level) {
+    if (newTool == null || newTool.isBroken() || newTool.getModifierLevel(this) != modifier.getLevel()) {
       AttributeInstance attribute = livingEntity.getAttribute(Attributes.MOVEMENT_SPEED);
 
       if (attribute != null) {

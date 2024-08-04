@@ -30,11 +30,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.TooltipFlag;
 import slimeknights.mantle.client.TooltipKey;
 import slimeknights.tconstruct.common.TinkerTags;
+import slimeknights.tconstruct.library.modifiers.ModifierEntry;
+import slimeknights.tconstruct.library.modifiers.ModifierHooks;
+import slimeknights.tconstruct.library.modifiers.hook.display.TooltipModifierHook;
+import slimeknights.tconstruct.library.module.ModuleHookMap;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
 import com.illusivesoulworks.constructsarmory.common.modifier.EquipmentUtil;
 
-public class SalvagedModifier extends AbstractSpeedModifier {
+public class SalvagedModifier extends AbstractSpeedModifier implements TooltipModifierHook {
 
   public static float boost(int durability, float boost, int min, int max) {
 
@@ -49,17 +53,20 @@ public class SalvagedModifier extends AbstractSpeedModifier {
   }
 
   @Override
-  public void addInformation(@Nonnull IToolStackView armor, int level,
-                             @Nullable Player player, @Nonnull List<Component> tooltip,
-                             @Nonnull TooltipKey key, @Nonnull TooltipFlag tooltipFlag) {
+  protected void registerHooks(ModuleHookMap.Builder hookBuilder) {
+    super.registerHooks(hookBuilder);
+    hookBuilder.addHook(this, ModifierHooks.TOOLTIP);
+  }
 
+  @Override
+  public void addTooltip(IToolStackView armor, ModifierEntry modifier, @org.jetbrains.annotations.Nullable Player player, List<Component> tooltip, TooltipKey key, TooltipFlag flag) {
     if (armor.hasTag(TinkerTags.Items.ARMOR)) {
       float boost;
 
       if (player != null && key == TooltipKey.SHIFT) {
-        boost = getTotalBoost(armor, level);
+        boost = getTotalBoost(armor, modifier.getLevel());
       } else {
-        boost = 0.025f * level;
+        boost = 0.025f * modifier.getLevel();
       }
 
       if (boost > 0) {

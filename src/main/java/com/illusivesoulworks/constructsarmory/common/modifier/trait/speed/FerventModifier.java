@@ -31,12 +31,22 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.TooltipFlag;
 import slimeknights.mantle.client.TooltipKey;
+import slimeknights.tconstruct.library.modifiers.ModifierEntry;
+import slimeknights.tconstruct.library.modifiers.ModifierHooks;
+import slimeknights.tconstruct.library.modifiers.hook.display.TooltipModifierHook;
+import slimeknights.tconstruct.library.module.ModuleHookMap;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import com.illusivesoulworks.constructsarmory.common.modifier.EquipmentUtil;
 
-public class FerventModifier extends AbstractSpeedModifier {
+public class FerventModifier extends AbstractSpeedModifier implements TooltipModifierHook {
 
   private static final float BASELINE_TEMPERATURE = 0.75f;
+
+  @Override
+  protected void registerHooks(ModuleHookMap.Builder hookBuilder) {
+    super.registerHooks(hookBuilder);
+    hookBuilder.addHook(this, ModifierHooks.TOOLTIP);
+  }
 
   private static float getBonus(LivingEntity player, BlockPos pos, int level) {
     return Math.abs(player.level.getBiome(pos).value().getBaseTemperature() - BASELINE_TEMPERATURE) * level /
@@ -44,15 +54,13 @@ public class FerventModifier extends AbstractSpeedModifier {
   }
 
   @Override
-  public void addInformation(@Nonnull IToolStackView armor, int level,
-                             @Nullable Player player, @Nonnull List<Component> tooltip,
-                             @Nonnull TooltipKey key, @Nonnull TooltipFlag tooltipFlag) {
+  public void addTooltip(IToolStackView armor, ModifierEntry modifier, @org.jetbrains.annotations.Nullable Player player, List<Component> tooltip, TooltipKey key, TooltipFlag flag) {
     float bonus;
 
     if (player != null && key == TooltipKey.SHIFT) {
-      bonus = getBonus(player, player.blockPosition(), level);
+      bonus = getBonus(player, player.blockPosition(), modifier.getLevel());
     } else {
-      bonus = level * 0.125f;
+      bonus = modifier.getLevel() * 0.125f;
     }
     if (bonus >= 0.01f) {
       EquipmentUtil.addSpeedTooltip(this, armor, bonus, tooltip);

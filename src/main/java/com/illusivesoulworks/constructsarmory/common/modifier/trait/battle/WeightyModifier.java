@@ -18,8 +18,6 @@
 package com.illusivesoulworks.constructsarmory.common.modifier.trait.battle;
 
 import java.util.List;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.damagesource.DamageSource;
@@ -28,16 +26,28 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.TooltipFlag;
+import org.jetbrains.annotations.Nullable;
 import slimeknights.mantle.client.TooltipKey;
 import slimeknights.tconstruct.library.modifiers.Modifier;
+import slimeknights.tconstruct.library.modifiers.ModifierEntry;
+import slimeknights.tconstruct.library.modifiers.ModifierHooks;
+import slimeknights.tconstruct.library.modifiers.hook.armor.ProtectionModifierHook;
+import slimeknights.tconstruct.library.modifiers.hook.display.TooltipModifierHook;
+import slimeknights.tconstruct.library.module.ModuleHookMap;
 import slimeknights.tconstruct.library.tools.context.EquipmentContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import com.illusivesoulworks.constructsarmory.common.modifier.EquipmentUtil;
 
-public class WeightyModifier extends Modifier {
+public class WeightyModifier extends Modifier implements ProtectionModifierHook, TooltipModifierHook {
 
   private static final float BASELINE_MOVEMENT = 0.1f;
   private static final float MAX_MOVEMENT = 0.15f;
+
+  @Override
+  protected void registerHooks(ModuleHookMap.Builder hookBuilder) {
+    super.registerHooks(hookBuilder);
+    hookBuilder.addHook(this, ModifierHooks.PROTECTION, ModifierHooks.TOOLTIP);
+  }
 
   private static float getBonus(float movementSpeed, float min, float max) {
 
@@ -52,26 +62,20 @@ public class WeightyModifier extends Modifier {
   }
 
   @Override
-  public float getProtectionModifier(@Nonnull IToolStackView tool, int level,
-                                     @Nonnull EquipmentContext context,
-                                     @Nonnull EquipmentSlot slotType, DamageSource source,
-                                     float modifierValue) {
-
+  public float getProtectionModifier(IToolStackView tool, ModifierEntry modifier, EquipmentContext context, EquipmentSlot slotType, DamageSource source, float modifierValue) {
     if (!source.isBypassMagic() && !source.isBypassInvul()) {
       AttributeInstance attributeInstance =
           context.getEntity().getAttribute(Attributes.MOVEMENT_SPEED);
 
       if (attributeInstance != null) {
-        modifierValue += getBonus((float) attributeInstance.getValue(), 0.0f, 1.5f) * level;
+        modifierValue += getBonus((float) attributeInstance.getValue(), 0.0f, 1.5f) * modifier.getLevel();
       }
     }
     return modifierValue;
   }
 
   @Override
-  public void addInformation(@Nonnull IToolStackView tool, int level,
-                             @Nullable Player player, @Nonnull List<Component> tooltip,
-                             @Nonnull TooltipKey key, @Nonnull TooltipFlag flag) {
+  public void addTooltip(IToolStackView tool, ModifierEntry modifier, @Nullable Player player, List<Component> tooltip, TooltipKey tooltipKey, TooltipFlag tooltipFlag) {
     float bonus;
 
     if (player != null) {
@@ -79,13 +83,14 @@ public class WeightyModifier extends Modifier {
           player.getAttribute(Attributes.MOVEMENT_SPEED);
 
       if (attributeInstance != null) {
-        bonus = getBonus((float) attributeInstance.getValue(), 0.0f, 1.5f) * level;
+        bonus = getBonus((float) attributeInstance.getValue(), 0.0f, 1.5f) * modifier.getLevel();
       } else {
         bonus = 0f;
       }
     } else {
-      bonus = level * 1.5f;
+      bonus = modifier.getLevel() * 1.5f;
     }
     EquipmentUtil.addResistanceTooltip(this, tool, bonus, tooltip);
+
   }
 }

@@ -18,8 +18,6 @@
 package com.illusivesoulworks.constructsarmory.common.modifier.trait.battle;
 
 import java.util.List;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -28,16 +26,28 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.TooltipFlag;
+import org.jetbrains.annotations.Nullable;
 import slimeknights.mantle.client.TooltipKey;
 import slimeknights.tconstruct.library.modifiers.Modifier;
+import slimeknights.tconstruct.library.modifiers.ModifierEntry;
+import slimeknights.tconstruct.library.modifiers.ModifierHooks;
+import slimeknights.tconstruct.library.modifiers.hook.armor.ProtectionModifierHook;
+import slimeknights.tconstruct.library.modifiers.hook.display.TooltipModifierHook;
+import slimeknights.tconstruct.library.module.ModuleHookMap;
 import slimeknights.tconstruct.library.tools.context.EquipmentContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import com.illusivesoulworks.constructsarmory.common.modifier.EquipmentUtil;
 
-public class StableModifier extends Modifier {
+public class StableModifier extends Modifier implements ProtectionModifierHook, TooltipModifierHook {
 
   private static final float BASELINE_TEMPERATURE = 0.75f;
   private static final float MAX_TEMPERATURE = 1.25f;
+
+  @Override
+  protected void registerHooks(ModuleHookMap.Builder hookBuilder) {
+    super.registerHooks(hookBuilder);
+    hookBuilder.addHook(this, ModifierHooks.PROTECTION, ModifierHooks.TOOLTIP);
+  }
 
   private static float getBonus(LivingEntity living, int level) {
     BlockPos pos = living.blockPosition();
@@ -46,26 +56,20 @@ public class StableModifier extends Modifier {
   }
 
   @Override
-  public float getProtectionModifier(@Nonnull IToolStackView tool, int level,
-                                     @Nonnull EquipmentContext context,
-                                     @Nonnull EquipmentSlot slotType, DamageSource source,
-                                     float modifierValue) {
-
+  public float getProtectionModifier(IToolStackView tool, ModifierEntry modifier, EquipmentContext context, EquipmentSlot slotType, DamageSource source, float modifierValue) {
     if (!source.isBypassMagic() && !source.isBypassInvul()) {
-      modifierValue += getBonus(context.getEntity(), level);
+      modifierValue += getBonus(context.getEntity(), modifier.getLevel());
     }
     return modifierValue;
   }
 
   @Override
-  public void addInformation(@Nonnull IToolStackView tool, int level,
-                             @Nullable Player player, @Nonnull List<Component> tooltip,
-                             @Nonnull TooltipKey key, @Nonnull TooltipFlag flag) {
+  public void addTooltip(IToolStackView tool, ModifierEntry modifier, @Nullable Player player, List<Component> tooltip, TooltipKey key, TooltipFlag flag) {
     float bonus;
     if (player != null && key == TooltipKey.SHIFT) {
-      bonus = getBonus(player, level);
+      bonus = getBonus(player, modifier.getLevel());
     } else {
-      bonus = level * 1.25f;
+      bonus = modifier.getLevel() * 1.25f;
     }
     EquipmentUtil.addResistanceTooltip(this, tool, bonus, tooltip);
   }

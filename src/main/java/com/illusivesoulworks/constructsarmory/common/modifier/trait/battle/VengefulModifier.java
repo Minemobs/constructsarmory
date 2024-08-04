@@ -17,9 +17,6 @@
 
 package com.illusivesoulworks.constructsarmory.common.modifier.trait.battle;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -29,8 +26,14 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
+import org.jetbrains.annotations.Nullable;
 import slimeknights.mantle.client.TooltipKey;
-import slimeknights.tconstruct.library.modifiers.impl.TotalArmorLevelModifier;
+import slimeknights.tconstruct.library.modifiers.Modifier;
+import slimeknights.tconstruct.library.modifiers.ModifierEntry;
+import slimeknights.tconstruct.library.modifiers.ModifierHooks;
+import slimeknights.tconstruct.library.modifiers.hook.armor.ProtectionModifierHook;
+import slimeknights.tconstruct.library.modifiers.hook.display.TooltipModifierHook;
+import slimeknights.tconstruct.library.module.ModuleHookMap;
 import slimeknights.tconstruct.library.tools.capability.TinkerDataCapability;
 import slimeknights.tconstruct.library.tools.context.EquipmentContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
@@ -40,18 +43,23 @@ import com.illusivesoulworks.constructsarmory.common.modifier.EquipmentUtil;
 
 import java.util.List;
 
-public class VengefulModifier extends TotalArmorLevelModifier {
+public class VengefulModifier extends Modifier implements ProtectionModifierHook, TooltipModifierHook {
 
   private static final TinkerDataCapability.TinkerDataKey<Integer> VENGEFUL =
       ConstructsArmoryMod.createKey("vengeful");
 
   public VengefulModifier() {
-    super(VENGEFUL);
     MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, VengefulModifier::onHurt);
   }
 
+  @Override
+  protected void registerHooks(ModuleHookMap.Builder hookBuilder) {
+    super.registerHooks(hookBuilder);
+    hookBuilder.addHook(this, ModifierHooks.PROTECTION, ModifierHooks.TOOLTIP);
+  }
+
   private static void onHurt(final LivingHurtEvent evt) {
-    LivingEntity living = evt.getEntityLiving();
+    LivingEntity living = evt.getEntity();
     living.getCapability(TinkerDataCapability.CAPABILITY).ifPresent(holder -> {
       int levels = holder.get(VENGEFUL, 0);
 
@@ -68,26 +76,19 @@ public class VengefulModifier extends TotalArmorLevelModifier {
   }
 
   @Override
-  public float getProtectionModifier(@Nonnull IToolStackView tool, int level,
-                                     @Nonnull EquipmentContext context,
-                                     @Nonnull EquipmentSlot slotType, DamageSource source,
-                                     float modifierValue) {
-
+  public float getProtectionModifier(IToolStackView tool, ModifierEntry modifier, EquipmentContext context, EquipmentSlot slotType, DamageSource source, float modifierValue) {
     if (!source.isBypassMagic() && !source.isBypassInvul()) {
-      modifierValue += getBonus(context.getEntity(), level);
+      modifierValue += getBonus(context.getEntity(), modifier.getLevel());
     }
     return modifierValue;
   }
 
   @Override
-  public void addInformation(@Nonnull IToolStackView tool, int level,
-                             @Nullable Player player, @Nonnull List<Component> tooltip,
-                             @Nonnull TooltipKey key, @Nonnull TooltipFlag flag) {
-
+  public void addTooltip(IToolStackView tool, ModifierEntry modifier, @Nullable Player player, List<Component> tooltip, TooltipKey key, TooltipFlag flag) {
     float bonus;
 
     if (player != null && key == TooltipKey.SHIFT) {
-      bonus = getBonus(player, level);
+      bonus = getBonus(player, modifier.getLevel());
     } else {
       bonus = 2f;
     }

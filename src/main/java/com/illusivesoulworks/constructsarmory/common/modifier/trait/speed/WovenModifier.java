@@ -27,6 +27,10 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraftforge.common.util.Lazy;
 import slimeknights.tconstruct.library.modifiers.Modifier;
+import slimeknights.tconstruct.library.modifiers.ModifierEntry;
+import slimeknights.tconstruct.library.modifiers.ModifierHooks;
+import slimeknights.tconstruct.library.modifiers.hook.behavior.AttributesModifierHook;
+import slimeknights.tconstruct.library.module.ModuleHookMap;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
 import slimeknights.tconstruct.tools.modifiers.traits.DamageSpeedTradeModifier;
@@ -36,7 +40,7 @@ import com.illusivesoulworks.constructsarmory.common.modifier.EquipmentUtil;
  * Modified copy of {@link DamageSpeedTradeModifier} from Tinkers' Construct
  * MIT License (c) SlimeKnights
  */
-public class WovenModifier extends Modifier {
+public class WovenModifier extends Modifier implements AttributesModifierHook {
 
   private final static float MULTIPLIER = 0.005f;
   private final Lazy<String> speedName = Lazy.of(() -> {
@@ -48,18 +52,21 @@ public class WovenModifier extends Modifier {
     return id.getPath() + "." + id.getNamespace() + ".armor";
   });
 
+  @Override
+  protected void registerHooks(ModuleHookMap.Builder hookBuilder) {
+    super.registerHooks(hookBuilder);
+    hookBuilder.addHook(this, ModifierHooks.ATTRIBUTES);
+  }
+
   private float getMultiplier(IToolStackView armor, int level) {
     return (float) (Math.sqrt(armor.getDamage() * level / armor.getMultiplier(ToolStats.DURABILITY)) *
         MULTIPLIER);
   }
 
   @Override
-  public void addAttributes(@Nonnull IToolStackView armor, int level,
-                            @Nonnull EquipmentSlot slot,
-                            @Nonnull BiConsumer<Attribute, AttributeModifier> consumer) {
-
+  public void addAttributes(IToolStackView armor, ModifierEntry modifier, EquipmentSlot slot, BiConsumer<Attribute, AttributeModifier> consumer) {
     if (slot.getType() == EquipmentSlot.Type.ARMOR) {
-      float boost = getMultiplier(armor, level);
+      float boost = getMultiplier(armor, modifier.getLevel());
 
       if (boost != 0) {
         UUID uuid = EquipmentUtil.getUuid(getId(), slot);

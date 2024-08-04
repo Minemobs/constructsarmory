@@ -20,20 +20,27 @@ package com.illusivesoulworks.constructsarmory.common.modifier.trait.general;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
-import net.minecraftforge.event.world.BlockEvent;
-import slimeknights.tconstruct.library.modifiers.impl.TotalArmorLevelModifier;
+import net.minecraftforge.event.level.BlockEvent;
+import slimeknights.tconstruct.library.modifiers.Modifier;
+import slimeknights.tconstruct.library.modifiers.modules.technical.ArmorLevelModule;
+import slimeknights.tconstruct.library.module.ModuleHookMap;
 import slimeknights.tconstruct.library.tools.capability.TinkerDataCapability;
 import com.illusivesoulworks.constructsarmory.ConstructsArmoryMod;
 
-public class ExperiencedModifier extends TotalArmorLevelModifier {
+public class ExperiencedModifier extends Modifier {
 
   private static final TinkerDataCapability.TinkerDataKey<Integer> EXPERIENCED =
       ConstructsArmoryMod.createKey("experienced");
 
   public ExperiencedModifier() {
-    super(EXPERIENCED);
     MinecraftForge.EVENT_BUS.addListener(this::onEntityKill);
     MinecraftForge.EVENT_BUS.addListener(this::beforeBlockBreak);
+  }
+
+  @Override
+  protected void registerHooks(ModuleHookMap.Builder hookBuilder) {
+    super.registerHooks(hookBuilder);
+    hookBuilder.addModule(new ArmorLevelModule(EXPERIENCED, false, null));
   }
 
   private static int boost(int original, int level) {

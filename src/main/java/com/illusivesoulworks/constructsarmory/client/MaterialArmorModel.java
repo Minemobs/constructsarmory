@@ -29,13 +29,11 @@ import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.jetbrains.annotations.NotNull;
-import slimeknights.mantle.data.ISafeManagerReloadListener;
+import slimeknights.mantle.data.listener.ISafeManagerReloadListener;
+import slimeknights.tconstruct.library.client.armor.AbstractArmorModel;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.tools.nbt.MaterialIdNBT;
-import slimeknights.tconstruct.tools.client.ArmorModelHelper;
-import slimeknights.tconstruct.tools.client.PlateArmorModel;
 import slimeknights.tconstruct.tools.data.material.MaterialIds;
 
 import javax.annotation.Nullable;
@@ -106,7 +104,7 @@ public class MaterialArmorModel extends Model {
     if (base != null) {
       base.renderToBuffer(matrices, buffer, packedLightIn, packedOverlayIn, red, green, blue, alpha);
       if (!materials.isEmpty()) {
-        MultiBufferSource mbf = (MultiBufferSource) FieldUtils.getDeclaredField(ArmorModelHelper.class, "buffer", true).get(null);
+        MultiBufferSource mbf = AbstractArmorModel.buffer;
         VertexConsumer overlayBuffer = ItemRenderer.getArmorFoilBuffer(mbf, isLegs ?
                 PLATE_LEG_RENDER_CACHE.computeIfAbsent(materials.get(0),
                         (k) -> LEG_GETTER.apply(k, "plate")) :

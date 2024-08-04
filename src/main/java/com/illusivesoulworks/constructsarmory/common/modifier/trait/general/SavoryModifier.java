@@ -23,22 +23,29 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import slimeknights.tconstruct.library.modifiers.Modifier;
+import slimeknights.tconstruct.library.modifiers.ModifierEntry;
+import slimeknights.tconstruct.library.modifiers.ModifierHooks;
+import slimeknights.tconstruct.library.modifiers.hook.armor.OnAttackedModifierHook;
+import slimeknights.tconstruct.library.module.ModuleHookMap;
 import slimeknights.tconstruct.library.tools.context.EquipmentContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.shared.TinkerCommons;
 
-public class SavoryModifier extends Modifier {
+public class SavoryModifier extends Modifier implements OnAttackedModifierHook {
 
   @Override
-  public void onAttacked(@Nonnull IToolStackView tool, int level,
-                         @Nonnull EquipmentContext context, @Nonnull EquipmentSlot slotType,
-                         @Nonnull DamageSource source, float amount, boolean isDirectDamage) {
+  protected void registerHooks(ModuleHookMap.Builder hookBuilder) {
+    super.registerHooks(hookBuilder);
+    hookBuilder.addHook(this, ModifierHooks.ON_ATTACKED);
+  }
 
+  @Override
+  public void onAttacked(IToolStackView tool, ModifierEntry modifier, EquipmentContext context, EquipmentSlot slotType, DamageSource source, float amount, boolean isDirectDamage) {
     if (amount > 0) {
       LivingEntity livingEntity = context.getEntity();
 
       if (livingEntity.invulnerableTime <= 10 &&
-          RANDOM.nextInt(24 / level) <= (Math.log(amount + 1.0f) * 2.0f)) {
+          RANDOM.nextInt(24 / modifier.getLevel()) <= (Math.log(amount + 1.0f) * 2.0f)) {
         context.getEntity().spawnAtLocation(new ItemStack(TinkerCommons.bacon));
       }
     }

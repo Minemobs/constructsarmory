@@ -29,9 +29,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.TooltipFlag;
 import slimeknights.mantle.client.TooltipKey;
 import slimeknights.tconstruct.library.modifiers.Modifier;
+import slimeknights.tconstruct.library.modifiers.ModifierEntry;
+import slimeknights.tconstruct.library.modifiers.hook.build.VolatileDataModifierHook;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.library.tools.context.EquipmentContext;
 import slimeknights.tconstruct.library.tools.context.ToolRebuildContext;
+import slimeknights.tconstruct.library.tools.nbt.IToolContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ModDataNBT;
 import slimeknights.tconstruct.tools.TinkerModifiers;
@@ -39,14 +42,13 @@ import com.illusivesoulworks.constructsarmory.common.modifier.EquipmentUtil;
 
 import java.util.List;
 
-public class IgneousModifier extends Modifier {
+public class IgneousModifier extends Modifier implements VolatileDataModifierHook {
 
   private static final float BASELINE_TEMPERATURE = 0.75f;
 
   @Override
-  public void addVolatileData(@Nonnull ToolRebuildContext context, int level,
-                              @Nonnull ModDataNBT volatileData) {
-    TinkerModifiers.tank.get().addCapacity(volatileData, FluidValues.INGOT * 2);
+  public void addVolatileData(IToolContext context, ModifierEntry modifier, ModDataNBT volatileData) {
+    TinkerModifiers.tankHandler.get().getHook().addCapacity(volatileData, FluidValues.INGOT * 2);
   }
 
   private static float temperatureBoost(LivingEntity living, int level) {

@@ -19,14 +19,27 @@ package com.illusivesoulworks.constructsarmory.common.modifier.trait.battle.coun
 
 import javax.annotation.Nonnull;
 
+import com.illusivesoulworks.constructsarmory.ConstructsArmoryMod;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import slimeknights.tconstruct.library.modifiers.modules.technical.ArmorLevelModule;
+import slimeknights.tconstruct.library.module.ModuleHookMap;
+import slimeknights.tconstruct.library.tools.capability.TinkerDataCapability;
 import slimeknights.tconstruct.library.tools.context.EquipmentContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
 
 public class SplinteredModifier extends CounterattackModifier {
+
+  private static final TinkerDataCapability.TinkerDataKey<Integer> SPLINTERED = ConstructsArmoryMod.createKey("splintered");
+
+  @Override
+  protected void registerHooks(ModuleHookMap.Builder hookBuilder) {
+    super.registerHooks(hookBuilder);
+    hookBuilder.addModule(new ArmorLevelModule(SPLINTERED, false, null));
+  }
+
 
   @Override
   protected int counter(@Nonnull IToolStackView tool, int level, LivingEntity attacker,

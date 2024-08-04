@@ -22,12 +22,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraftforge.client.event.ColorHandlerEvent;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import slimeknights.tconstruct.library.client.model.tools.ToolModel;
-import slimeknights.tconstruct.library.tools.item.ModifiableArmorItem;
+import slimeknights.tconstruct.library.tools.item.armor.ModifiableArmorItem;
 
 public class ConstructsArmoryClient {
 
@@ -37,7 +37,7 @@ public class ConstructsArmoryClient {
     eventBus.addListener(ConstructsArmoryClient::colors);
   }
 
-  public static void colors(final ColorHandlerEvent.Item evt) {
+  public static void colors(final RegisterColorHandlersEvent.Item evt) {
     final ItemColors colors = evt.getItemColors();
 
     for (ModifiableArmorItem item : ConstructsArmoryItems.MATERIAL_ARMOR.values()) {
@@ -52,8 +52,7 @@ public class ConstructsArmoryClient {
       ResourceManager rm = Minecraft.getInstance().getResourceManager();
 
       if (rm instanceof ReloadableResourceManager resource) {
-        resource.registerReloadListener(
-            MaterialArmorModel.RELOAD_LISTENER);
+        resource.registerReloadListener(MaterialArmorModel.RELOAD_LISTENER);
       }
     }
   }
